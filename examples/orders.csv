@@ -1,0 +1,32 @@
+# symbol,action,id,side,type,price(cents),quantity
+# A small session on two symbols. Run: ./build/replay examples/orders.csv
+
+# Build an AAPL book
+AAPL,NEW,1,SELL,LIMIT,15010,100
+AAPL,NEW,2,SELL,LIMIT,15005,50
+AAPL,NEW,3,SELL,LIMIT,15005,75
+AAPL,NEW,4,BUY,LIMIT,14995,200
+AAPL,NEW,5,BUY,LIMIT,14990,100
+
+# Aggressive buy: takes 15005 in time order (#2 then #3), then part of 15010
+AAPL,NEW,6,BUY,LIMIT,15010,150
+
+# Market sell hits the best bids
+AAPL,NEW,7,SELL,MARKET,0,250
+
+# IOC that cannot fully fill: the rest is cancelled, nothing rests
+AAPL,NEW,8,BUY,IOC,15010,500
+
+# Cancel and modify
+AAPL,NEW,9,BUY,LIMIT,14980,40
+AAPL,CANCEL,9
+AAPL,NEW,10,SELL,LIMIT,15020,60
+AAPL,MODIFY,10,15015,60
+
+# A second, independent book
+MSFT,NEW,1,BUY,LIMIT,41250,30
+MSFT,NEW,2,SELL,LIMIT,41260,30
+MSFT,NEW,3,SELL,LIMIT,41250,10
+
+# Rejected: zero quantity
+MSFT,NEW,4,BUY,LIMIT,41250,0

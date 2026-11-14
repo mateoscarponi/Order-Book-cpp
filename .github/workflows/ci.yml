@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.compiler }} / ${{ matrix.config }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [g++, clang++]
+        config: [release, address, thread]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: |
+          case "${{ matrix.config }}" in
+            release) EXTRA="-DCMAKE_BUILD_TYPE=Release" ;;
+            address) EXTRA="-DCMAKE_BUILD_TYPE=Debug -DOB_SANITIZE=address" ;;
+            thread)  EXTRA="-DCMAKE_BUILD_TYPE=Debug -DOB_SANITIZE=thread" ;;
+          esac
+          cmake -S . -B build -DCMAKE_CXX_COMPILER=${{ matrix.compiler }} -DOB_WERROR=ON $EXTRA
+
+      - name: Build
+        run: cmake --build build -j
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Benchmark (release only)
+        if: matrix.config == 'release'
+        run: ./build/bench 1000000 16
