@@ -20,6 +20,7 @@
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
   .panel h2 { margin: 0 0 12px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
   label { display: block; color: var(--muted); font-size: 12px; margin: 10px 0 4px; }
+  input[type=range] { padding: 0; accent-color: var(--accent); }
   input, select { width: 100%; padding: 8px 10px; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 6px; font: inherit; }
   input:disabled { opacity: .4; }
   .sides { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -92,6 +93,8 @@
       <button id="auto">Auto-flow: off</button>
       <button id="reset">Reset</button>
     </div>
+    <label for="pressure">Auto-flow mix: <span id="pressureLabel">50% buyers / 50% sellers</span></label>
+    <input id="pressure" type="range" min="20" max="80" step="5" value="50">
     <div class="msg" id="msg">Load the sample book, then send an order that crosses the spread.</div>
     <p class="help">Click an order chip (#id × qty) in the book to cancel it. The outlined chip at each price is first in line.</p>
   </section>
@@ -121,7 +124,7 @@
   const money = (cents) => (cents / 100).toFixed(2);
   let side = "BUY";
   let book = { bids: [], asks: [] };
-  let tradeCount = 0, volume = 0, autoTimer = null;
+  let tradeCount = 0, volume = 0, autoTimer = null, buyShare = 0.5;
 
   async function send(command) {
     const response = await fetch("/api/command", {
@@ -202,7 +205,7 @@
       const id = all[Math.floor(Math.random() * all.length)];
       return send(`CANCEL ${id}`).then((d) => describe(d, ""));
     }
-    const s = Math.random() < 0.5 ? "BUY" : "SELL";
+    const s = Math.random() < buyShare ? "BUY" : "SELL";
     const type = roll < 0.18 ? "MARKET" : roll < 0.25 ? "IOC" : "LIMIT";
     const lean = s === "BUY" ? -4 : 4;
     const cents = Math.max(1, Math.round(mid + lean + (Math.random() * 16 - 8)));
@@ -238,6 +241,11 @@
   $("book").addEventListener("click", (e) => {
     const chip = e.target.closest(".chip");
     if (chip) send(`CANCEL ${chip.dataset.id}`).then((d) => describe(d, ""));
+  });
+  $("pressure").addEventListener("input", () => {
+    const buyers = parseInt($("pressure").value, 10);
+    buyShare = buyers / 100;
+    $("pressureLabel").textContent = `${buyers}% buyers / ${100 - buyers}% sellers`;
   });
   $("seed").addEventListener("click", seed);
   $("random").addEventListener("click", randomOrder);

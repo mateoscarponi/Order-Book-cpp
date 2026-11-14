@@ -37,7 +37,7 @@ cmake -S . -B build && cmake --build build
 python demo/server.py          # then open http://localhost:8000
 ```
 
-`demo/server.py` (Python standard library only) starts `build/interactive`, a line-based front end to one `OrderBook`, and forwards each command from the page to it. Load the sample book, send an order that crosses the spread, click an order to cancel it, or turn on auto-flow to stream random orders. The page shows the ladder with each price level's queue in time order, the spread, and a live trade tape.
+`demo/server.py` (Python standard library only) starts `build/interactive`, a line-based front end to one `OrderBook`, and forwards each command from the page to it. Load the sample book, send an order that crosses the spread, click an order to cancel it, or turn on auto-flow to stream random orders, with a slider for the mix of buyers and sellers. The page shows the ladder with each price level's queue in time order, the spread, and a live trade tape.
 
 ### Example
 
@@ -60,6 +60,41 @@ AAPL
 ```
 
 Order #6 fills against #2 before #3 because both rest at 150.05 and #2 arrived first.
+
+## Author's note: watching supply and demand happen
+
+Every economics class teaches the same rule: when many people want to buy and few want to sell, the price goes up, and when everyone is selling and few are buying, the price goes down. I knew the rule. Building this order book let me watch it happen, one order at a time.
+
+The book is a picture of supply and demand. The **sell orders (asks) are the supply**: everyone willing to sell, and their minimum price. The **buy orders (bids) are the demand**: everyone willing to buy, and their maximum price. The price is simply wherever the two sides meet.
+
+**Experiment 1: a wave of buyers.** I loaded the demo's sample book (best price to buy: 150.05) and sent eight market buy orders of 100 shares in a row. A market order means "buy now, at whatever price there is."
+
+| Buy order | Price paid for the last share | Shares still for sale |
+|---|---|---|
+| 1st | 150.05 | 525 |
+| 3rd | 150.15 | 325 |
+| 5th | 150.20 | 125 |
+| 6th | 150.25 | 25 |
+| 7th | 150.25 (only 25 filled) | 0 |
+| 8th | nothing filled | 0 |
+
+Each buyer used up the cheapest sellers, so the next buyer had to pay the next price up. The price climbed from 150.05 to 150.25 without anyone "deciding" to raise it. It rose because supply ran out. The 7th buyer could only get 25 shares, and the 8th got nothing: with no sellers left there is no price at all, only buyers waiting.
+
+**Experiment 2: a wave of sellers.** The mirror image. Eight market sells of 100 pushed the price down step by step, from 149.95 to 149.75, until no buyers were left.
+
+**Experiment 3: a market that leans one way.** The demo's auto-flow sends random orders. I ran it 20 times, 500 orders each, with three different mixes of buyers and sellers:
+
+| Mix | Typical final price (start: 150.00) |
+|---|---|
+| 50% buyers, 50% sellers | 150.01 (it wanders, but stays put) |
+| 60% buyers | 150.17 (range 150.09 to 150.30) |
+| 60% sellers | 149.85 (range 149.69 to 149.95) |
+
+A small tilt is enough. Nobody in the simulation knows anything about the "value" of the stock. A few more buyers than sellers, sustained over time, steadily pushes the price up, and the opposite pushes it down. That is supply and demand in its simplest form.
+
+**What this taught me about real trading.** The first share of a big order is cheap and the last one is expensive. In Experiment 1, buying 625 shares at market cost an average of 150.14 per share, not the 150.05 shown on screen. Traders call this gap *slippage*, and avoiding it is a big reason execution software exists: it splits large orders into small pieces over time, so they do not eat through the book all at once.
+
+You can repeat all three experiments in the [live demo](#live-demo-in-the-browser): load the sample book, then send market orders or move the buyers/sellers slider with auto-flow on.
 
 ## Design
 
