@@ -4,20 +4,30 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Order Book Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Poppins:wght@600;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f1115; --panel: #171a21; --line: #262b36; --text: #e6e8ee; --muted: #8b93a7;
-    --bid: #2fbf71; --bid-soft: rgba(47,191,113,.16); --ask: #ef5350; --ask-soft: rgba(239,83,80,.16);
-    --accent: #f5b942; --chip: #222733;
+    /* Built by Oak palette (builtbyoak.com) */
+    --paper: #fbf7ec; --oat: #f3e9d7; --birch: #e8dbc0; --honey: #dbab52; --amber: #cc9140;
+    --oak: #b9742d; --chestnut: #8f5624; --walnut: #5e3a1f; --espresso: #1e1612; --bark: #2c211a; --leaf: #94933f;
+    --bg: var(--espresso); --panel: var(--bark); --line: rgba(251,247,236,.10); --text: var(--paper); --muted: rgba(232,219,192,.62);
+    --bid: #b3b24f; --bid-soft: rgba(148,147,63,.28); --ask: #e07a43; --ask-soft: rgba(204,108,52,.24);
+    --accent: var(--honey); --chip: rgba(251,247,236,.06);
+    --font-display: "Poppins", system-ui, sans-serif; --font-body: "Instrument Sans", system-ui, sans-serif;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; color: var(--text); font: 14px/1.4 var(--font-body);
+    background: radial-gradient(1200px 600px at 70% -10%, rgba(219,171,82,.10), transparent 60%), var(--bg); }
+  main { flex: 1; }
   header { padding: 18px 24px; border-bottom: 1px solid var(--line); display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
-  header h1 { margin: 0; font-size: 18px; }
+  header h1 { margin: 0; font: 800 20px/1 var(--font-display); letter-spacing: -.03em; }
+  header h1 em { font-style: normal; color: var(--honey); font-size: .75em; }
   header p { margin: 0; color: var(--muted); }
   main { display: grid; grid-template-columns: 300px minmax(380px, 1fr) 300px; gap: 16px; padding: 16px 24px; }
   @media (max-width: 1100px) { main { grid-template-columns: 1fr; } }
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+  .panel { box-shadow: inset 0 0 0 1px rgba(251,247,236,.03), 0 14px 30px rgba(0,0,0,.25); }
   .panel h2 { margin: 0 0 12px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
   label { display: block; color: var(--muted); font-size: 12px; margin: 10px 0 4px; }
   input[type=range] { padding: 0; accent-color: var(--accent); }
@@ -26,9 +36,14 @@
   .sides { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   button { font: inherit; cursor: pointer; border-radius: 6px; border: 1px solid var(--line); background: var(--chip); color: var(--text); padding: 9px 12px; }
   button:hover { border-color: var(--muted); }
-  .side-btn.active.buy { background: var(--bid); border-color: var(--bid); color: #06150d; font-weight: 600; }
-  .side-btn.active.sell { background: var(--ask); border-color: var(--ask); color: #1a0606; font-weight: 600; }
-  .primary { width: 100%; margin-top: 14px; background: var(--accent); border-color: var(--accent); color: #1b1404; font-weight: 600; }
+  /* Pressed effect: the button sinks while held and springs back on release. */
+  button { box-shadow: 0 4px 0 rgba(0,0,0,.45), inset 0 1px 0 rgba(251,247,236,.08);
+    transform: translateY(0); transition: transform .08s ease-out, box-shadow .08s ease-out, filter .08s; }
+  button:active { transform: translateY(4px) scale(.98); filter: brightness(.88);
+    box-shadow: 0 0 0 rgba(0,0,0,.45), inset 0 2px 6px rgba(0,0,0,.35); }
+  .side-btn.active.buy { background: var(--bid); border-color: var(--bid); color: var(--espresso); font-weight: 600; }
+  .side-btn.active.sell { background: var(--ask); border-color: var(--ask); color: var(--espresso); font-weight: 600; }
+  .primary { width: 100%; margin-top: 14px; background: var(--accent); border-color: var(--accent); color: var(--espresso); font-weight: 600; }
   .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
   .tools button.on { border-color: var(--accent); color: var(--accent); }
   .msg { margin-top: 14px; min-height: 40px; font-size: 13px; color: var(--muted); }
@@ -58,13 +73,53 @@
   .tape li.new { animation: flash 1s ease-out; }
   .tape .buy { color: var(--bid); } .tape .sell { color: var(--ask); }
   .tape small { color: var(--muted); }
-  @keyframes flash { from { background: rgba(245,185,66,.25); } to { background: transparent; } }
+  @keyframes flash { from { background: rgba(219,171,82,.28); } to { background: transparent; } }
+  .site-footer { margin-top: 8px; padding: 22px 24px 26px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap;
+    align-items: center; justify-content: space-between; gap: 16px 32px; color: var(--muted); }
+  .site-footer p { margin: 0; font-size: 13px; }
+  .site-footer p b { color: var(--paper); font-weight: 600; }
+  .oak-chip { display: inline-flex; align-items: center; gap: .3em; padding: .2em 1em .2em .3em; min-height: 2.9em; border-radius: .85em;
+    background: var(--espresso); color: var(--paper); text-decoration: none; white-space: nowrap; font: 800 20px/1 var(--font-display);
+    letter-spacing: -.05em; box-shadow: inset 0 0 0 1px rgba(251,247,236,.14), 0 10px 26px rgba(0,0,0,.28);
+    transition: transform .35s cubic-bezier(.2,.8,.2,1); }
+  .oak-chip svg { width: 2.4em; height: 2.4em; margin: -.3em -.15em -.3em -.2em; overflow: visible; flex: none;
+    transition: transform .35s cubic-bezier(.2,.8,.2,1); }
+  .oak-chip:hover { transform: translateY(-2px); }
+  .oak-chip:hover svg { transform: rotate(-8deg); }
+  .social { display: flex; gap: 8px; list-style: none; margin: 0; padding: 0; }
+  .social a { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 12px; color: rgba(251,247,236,.8);
+    background: rgba(251,247,236,.07); transition: color .2s, background-color .2s; }
+  .social a:hover { color: var(--honey); background: rgba(251,247,236,.12); }
+  .social svg { width: 26px; height: 26px; fill: currentColor; shape-rendering: crispEdges; }
+  .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+  .tab { padding: 7px 10px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .tab.active { color: var(--espresso); background: var(--honey); border-color: var(--honey); font-weight: 600; }
+  .position { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-bottom: 8px; }
+  .position small { color: var(--muted); font-size: 11px; display: block; }
+  .position b { display: block; font: 800 24px/1.2 var(--font-display); letter-spacing: -.02em; }
+  .position span { color: var(--muted); font-size: 12px; }
+  .pos { color: var(--bid); } .neg { color: var(--ask); }
+  .subhead { margin: 6px 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
+  .chip.mine { border-color: var(--honey); color: var(--honey); }
   .help { color: var(--muted); font-size: 12px; margin-top: 12px; line-height: 1.5; }
 </style>
 </head>
 <body>
+<svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false"><defs>
+    <linearGradient id="oak-mark-fill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B0583F"/><stop offset="1" stop-color="#86493C"/></linearGradient>
+    <linearGradient id="oak-mark-fill-bright" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EE8A5E"/><stop offset=".55" stop-color="#D4653F"/><stop offset="1" stop-color="#E0A24E"/></linearGradient>
+    <filter id="oak-mark-shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="2.5" dy="4" stdDeviation="2.4" flood-color="#1E1612" flood-opacity=".28"/></filter>
+    <clipPath id="oak-mark-clip"><path d="M50 3C50.39 3.84 51.31 7.15 52.82 9C53.64 10.01 55.65 10.29 56.11 10.5C55.89 11.13 54.05 13.34 54.51 15C55.05 16.95 57.91 18.44 58.46 19C58.07 19.46 55.96 20.77 55.64 22.3C55.21 24.34 54.62 27.29 56.58 28C58.44 28.67 59.03 25.48 60.34 24C62.07 22.05 63.45 20.56 65.04 18.5C66.5 16.6 68.27 13.77 68.8 13C68.51 13.81 65.7 16.84 66.73 18.8C67.85 20.92 72.15 20.69 73.03 21C72.44 21.67 69.92 23.79 68.8 25.8C67.67 27.84 68.22 30.06 66.92 32C65.41 34.25 63.09 34.98 61.28 37C59.84 38.61 57.16 40.01 57.99 42C58.71 43.73 61.35 41.96 63.16 41.5C65.62 40.87 67.53 40.25 69.74 39C72.99 37.16 77.02 33.84 78.2 33C77.71 33.74 73.87 36.18 74.72 38.3C75.6 40.48 80.14 39.76 81.02 40C80.2 40.67 75.75 42.14 75.19 44.8C74.77 46.83 78.59 48.41 79.14 49C77.96 49.14 73.63 49.17 70.68 50C67.81 50.81 65.63 51.82 63.16 53.5C61.32 54.75 58.48 55.82 58.93 58C59.31 59.82 62.25 58.24 64.1 58C66.51 57.69 68.32 57.09 70.68 56.5C73.4 55.83 77.15 54.78 78.2 54.5C77.52 55.21 73.61 57.07 73.31 59.6C73.11 61.35 76.71 62.09 77.26 62.5C76.34 62.71 73.02 63.34 70.68 64C67.94 64.78 65.74 65.29 63.16 66.5C61.47 67.29 59.25 67.66 58.93 69.5C58.57 71.54 59.73 74.05 61.75 74.5C64.14 75.04 67 71.92 67.86 71.5C67.66 71.92 67.15 73.54 66.45 74.5C64.77 76.8 63.27 78.46 61.28 80.5C58.7 83.15 56.59 85.12 53.76 87.5C52.52 88.55 50.53 89.65 50 90C49.47 89.65 47.48 88.55 46.24 87.5C43.41 85.12 41.56 82.87 38.72 80.5C36.98 79.05 35.22 78.43 33.55 76.9C32.59 76.02 31.82 74.32 31.54 73.9C32.48 74.32 35.66 77.44 38.25 76.9C40.27 76.48 41.43 73.94 41.07 71.9C40.75 70.06 38.53 69.69 36.84 68.9C34.26 67.69 32.07 67.15 29.32 66.4C26.77 65.71 23.15 65.11 22.14 64.9C22.78 64.49 26.91 63.93 26.69 62C26.37 59.32 21.97 57.61 21.2 56.9C22.34 57.18 26.39 58.2 29.32 58.9C31.68 59.46 33.49 60.09 35.9 60.4C37.75 60.64 40.69 62.22 41.07 60.4C41.52 58.22 38.68 57.15 36.84 55.9C34.37 54.22 32.2 53.18 29.32 52.4C26.15 51.54 21.53 51.54 20.26 51.4C20.9 50.81 25.26 49.38 24.81 47.2C24.22 44.37 19.28 43.07 18.38 42.4C19.35 42.16 24.32 43.07 25.28 40.7C26.18 38.47 21.77 36.14 21.2 35.4C22.47 36.24 26.82 39.53 30.26 41.4C32.49 42.61 34.38 43.27 36.84 43.9C38.65 44.36 41.29 46.13 42.01 44.4C42.84 42.41 40.16 41.01 38.72 39.4C36.91 37.38 34.59 36.65 33.08 34.4C31.78 32.46 32.41 30.19 31.2 28.2C29.92 26.11 27.05 24.07 26.37 23.4C27.34 23.09 32.05 23.5 33.27 21.2C34.34 19.17 30.97 16.21 30.6 15.4C31.21 16.17 33.35 18.95 34.96 20.9C36.62 22.91 37.93 24.45 39.66 26.4C40.97 27.88 41.56 31.07 43.42 30.4C45.38 29.69 44.91 26.7 44.36 24.7C43.91 23.05 41.42 21.86 40.94 21.4C41.58 20.84 44.91 19.5 45.49 17.4C45.97 15.66 43.6 13.53 43.29 12.9C43.83 12.69 46.34 12.64 47.18 11.4C48.97 8.76 49.61 4.18 50 3Z"/></clipPath>
+    <path id="oak-mark-blade" d="M50 3C50.39 3.84 51.31 7.15 52.82 9C53.64 10.01 55.65 10.29 56.11 10.5C55.89 11.13 54.05 13.34 54.51 15C55.05 16.95 57.91 18.44 58.46 19C58.07 19.46 55.96 20.77 55.64 22.3C55.21 24.34 54.62 27.29 56.58 28C58.44 28.67 59.03 25.48 60.34 24C62.07 22.05 63.45 20.56 65.04 18.5C66.5 16.6 68.27 13.77 68.8 13C68.51 13.81 65.7 16.84 66.73 18.8C67.85 20.92 72.15 20.69 73.03 21C72.44 21.67 69.92 23.79 68.8 25.8C67.67 27.84 68.22 30.06 66.92 32C65.41 34.25 63.09 34.98 61.28 37C59.84 38.61 57.16 40.01 57.99 42C58.71 43.73 61.35 41.96 63.16 41.5C65.62 40.87 67.53 40.25 69.74 39C72.99 37.16 77.02 33.84 78.2 33C77.71 33.74 73.87 36.18 74.72 38.3C75.6 40.48 80.14 39.76 81.02 40C80.2 40.67 75.75 42.14 75.19 44.8C74.77 46.83 78.59 48.41 79.14 49C77.96 49.14 73.63 49.17 70.68 50C67.81 50.81 65.63 51.82 63.16 53.5C61.32 54.75 58.48 55.82 58.93 58C59.31 59.82 62.25 58.24 64.1 58C66.51 57.69 68.32 57.09 70.68 56.5C73.4 55.83 77.15 54.78 78.2 54.5C77.52 55.21 73.61 57.07 73.31 59.6C73.11 61.35 76.71 62.09 77.26 62.5C76.34 62.71 73.02 63.34 70.68 64C67.94 64.78 65.74 65.29 63.16 66.5C61.47 67.29 59.25 67.66 58.93 69.5C58.57 71.54 59.73 74.05 61.75 74.5C64.14 75.04 67 71.92 67.86 71.5C67.66 71.92 67.15 73.54 66.45 74.5C64.77 76.8 63.27 78.46 61.28 80.5C58.7 83.15 56.59 85.12 53.76 87.5C52.52 88.55 50.53 89.65 50 90C49.47 89.65 47.48 88.55 46.24 87.5C43.41 85.12 41.56 82.87 38.72 80.5C36.98 79.05 35.22 78.43 33.55 76.9C32.59 76.02 31.82 74.32 31.54 73.9C32.48 74.32 35.66 77.44 38.25 76.9C40.27 76.48 41.43 73.94 41.07 71.9C40.75 70.06 38.53 69.69 36.84 68.9C34.26 67.69 32.07 67.15 29.32 66.4C26.77 65.71 23.15 65.11 22.14 64.9C22.78 64.49 26.91 63.93 26.69 62C26.37 59.32 21.97 57.61 21.2 56.9C22.34 57.18 26.39 58.2 29.32 58.9C31.68 59.46 33.49 60.09 35.9 60.4C37.75 60.64 40.69 62.22 41.07 60.4C41.52 58.22 38.68 57.15 36.84 55.9C34.37 54.22 32.2 53.18 29.32 52.4C26.15 51.54 21.53 51.54 20.26 51.4C20.9 50.81 25.26 49.38 24.81 47.2C24.22 44.37 19.28 43.07 18.38 42.4C19.35 42.16 24.32 43.07 25.28 40.7C26.18 38.47 21.77 36.14 21.2 35.4C22.47 36.24 26.82 39.53 30.26 41.4C32.49 42.61 34.38 43.27 36.84 43.9C38.65 44.36 41.29 46.13 42.01 44.4C42.84 42.41 40.16 41.01 38.72 39.4C36.91 37.38 34.59 36.65 33.08 34.4C31.78 32.46 32.41 30.19 31.2 28.2C29.92 26.11 27.05 24.07 26.37 23.4C27.34 23.09 32.05 23.5 33.27 21.2C34.34 19.17 30.97 16.21 30.6 15.4C31.21 16.17 33.35 18.95 34.96 20.9C36.62 22.91 37.93 24.45 39.66 26.4C40.97 27.88 41.56 31.07 43.42 30.4C45.38 29.69 44.91 26.7 44.36 24.7C43.91 23.05 41.42 21.86 40.94 21.4C41.58 20.84 44.91 19.5 45.49 17.4C45.97 15.66 43.6 13.53 43.29 12.9C43.83 12.69 46.34 12.64 47.18 11.4C48.97 8.76 49.61 4.18 50 3Z"/>
+    <path id="oak-mark-half" d="M50 3C50.39 3.84 51.31 7.15 52.82 9C53.64 10.01 55.65 10.29 56.11 10.5C55.89 11.13 54.05 13.34 54.51 15C55.05 16.95 57.91 18.44 58.46 19C58.07 19.46 55.96 20.77 55.64 22.3C55.21 24.34 54.62 27.29 56.58 28C58.44 28.67 59.03 25.48 60.34 24C62.07 22.05 63.45 20.56 65.04 18.5C66.5 16.6 68.27 13.77 68.8 13C68.51 13.81 65.7 16.84 66.73 18.8C67.85 20.92 72.15 20.69 73.03 21C72.44 21.67 69.92 23.79 68.8 25.8C67.67 27.84 68.22 30.06 66.92 32C65.41 34.25 63.09 34.98 61.28 37C59.84 38.61 57.16 40.01 57.99 42C58.71 43.73 61.35 41.96 63.16 41.5C65.62 40.87 67.53 40.25 69.74 39C72.99 37.16 77.02 33.84 78.2 33C77.71 33.74 73.87 36.18 74.72 38.3C75.6 40.48 80.14 39.76 81.02 40C80.2 40.67 75.75 42.14 75.19 44.8C74.77 46.83 78.59 48.41 79.14 49C77.96 49.14 73.63 49.17 70.68 50C67.81 50.81 65.63 51.82 63.16 53.5C61.32 54.75 58.48 55.82 58.93 58C59.31 59.82 62.25 58.24 64.1 58C66.51 57.69 68.32 57.09 70.68 56.5C73.4 55.83 77.15 54.78 78.2 54.5C77.52 55.21 73.61 57.07 73.31 59.6C73.11 61.35 76.71 62.09 77.26 62.5C76.34 62.71 73.02 63.34 70.68 64C67.94 64.78 65.74 65.29 63.16 66.5C61.47 67.29 59.25 67.66 58.93 69.5C58.57 71.54 59.73 74.05 61.75 74.5C64.14 75.04 67 71.92 67.86 71.5C67.66 71.92 67.15 73.54 66.45 74.5C64.77 76.8 63.27 78.46 61.28 80.5C58.7 83.15 56.59 85.12 53.76 87.5C52.52 88.55 50.53 89.65 50 90C50 77.82 50 15.18 50 3C50 3 50 3 50 3Z"/>
+    <symbol id="oak-mark" viewBox="0 0 100 100"><g transform="rotate(-24 50 50) translate(4 2) scale(.9)" filter="url(#oak-mark-shadow)"><path d="M50 88.5Q50.4 93 49.6 97.5" fill="none" stroke="#6E3A2C" stroke-width="2.4" stroke-linecap="round"/><use href="#oak-mark-blade" fill="url(#oak-mark-fill)"/><g clip-path="url(#oak-mark-clip)"><g fill="#4A2A20" opacity=".5"><circle cx="46.2" cy="23.0" r="1.02"/><circle cx="33.6" cy="51.1" r="0.79"/><circle cx="32.9" cy="49.0" r="0.53"/><circle cx="51.7" cy="17.1" r="0.57"/><circle cx="51.2" cy="72.4" r="0.60"/><circle cx="41.2" cy="57.8" r="1.26"/><circle cx="58.9" cy="41.0" r="1.28"/><circle cx="32.3" cy="74.7" r="0.73"/><circle cx="37.2" cy="20.6" r="0.75"/><circle cx="70.8" cy="25.2" r="0.97"/><circle cx="61.9" cy="39.2" r="0.94"/><circle cx="33.1" cy="16.4" r="0.66"/><circle cx="64.0" cy="43.2" r="0.75"/><circle cx="59.3" cy="45.1" r="0.74"/><circle cx="69.7" cy="63.0" r="0.70"/><circle cx="58.7" cy="50.3" r="1.20"/><circle cx="66.5" cy="33.0" r="1.28"/><circle cx="35.9" cy="42.5" r="1.11"/><circle cx="37.6" cy="47.7" r="0.53"/><circle cx="63.4" cy="67.8" r="0.96"/><circle cx="73.8" cy="34.9" r="1.06"/><circle cx="59.7" cy="54.3" r="0.86"/><circle cx="72.0" cy="81.0" r="0.88"/><circle cx="63.2" cy="16.4" r="1.06"/><circle cx="62.4" cy="84.5" r="1.16"/><circle cx="44.2" cy="40.2" r="1.03"/></g><use href="#oak-mark-half" fill="#1E1612" opacity=".16"/><path d="M50 94.5Q50.6 60 50 8 M50.2 33Q59.4 27 66.6 14.6 M49.8 34.6Q40.3 28.6 32.8 16.2 M50.2 49Q64.1 43 76 34.6 M49.8 50.6Q35.6 44.6 23.4 36.2 M50.2 63Q64.1 57 76 56.1 M49.8 64.6Q35.6 58.6 23.4 57.7 M50.2 77Q58.93 71 65.66 73.1 M49.8 78.6Q40.77 72.6 33.74 74.7" fill="none" stroke="#E9C3A6" stroke-width="1.15" stroke-linecap="round"/></g></g></symbol>
+    <symbol id="oak-mark-flat" viewBox="0 0 100 100"><g transform="rotate(-24 50 50) translate(4 2) scale(.9)"><path d="M50 88.5Q50.4 93 49.6 97.5" fill="none" stroke="#6E3A2C" stroke-width="2.4" stroke-linecap="round"/><use href="#oak-mark-blade" fill="url(#oak-mark-fill)"/><g clip-path="url(#oak-mark-clip)"><g fill="#4A2A20" opacity=".5"><circle cx="46.2" cy="23.0" r="1.02"/><circle cx="33.6" cy="51.1" r="0.79"/><circle cx="32.9" cy="49.0" r="0.53"/><circle cx="51.7" cy="17.1" r="0.57"/><circle cx="51.2" cy="72.4" r="0.60"/><circle cx="41.2" cy="57.8" r="1.26"/><circle cx="58.9" cy="41.0" r="1.28"/><circle cx="32.3" cy="74.7" r="0.73"/><circle cx="37.2" cy="20.6" r="0.75"/><circle cx="70.8" cy="25.2" r="0.97"/><circle cx="61.9" cy="39.2" r="0.94"/><circle cx="33.1" cy="16.4" r="0.66"/><circle cx="64.0" cy="43.2" r="0.75"/><circle cx="59.3" cy="45.1" r="0.74"/><circle cx="69.7" cy="63.0" r="0.70"/><circle cx="58.7" cy="50.3" r="1.20"/><circle cx="66.5" cy="33.0" r="1.28"/><circle cx="35.9" cy="42.5" r="1.11"/><circle cx="37.6" cy="47.7" r="0.53"/><circle cx="63.4" cy="67.8" r="0.96"/><circle cx="73.8" cy="34.9" r="1.06"/><circle cx="59.7" cy="54.3" r="0.86"/><circle cx="72.0" cy="81.0" r="0.88"/><circle cx="63.2" cy="16.4" r="1.06"/><circle cx="62.4" cy="84.5" r="1.16"/><circle cx="44.2" cy="40.2" r="1.03"/></g><use href="#oak-mark-half" fill="#1E1612" opacity=".16"/><path d="M50 94.5Q50.6 60 50 8 M50.2 33Q59.4 27 66.6 14.6 M49.8 34.6Q40.3 28.6 32.8 16.2 M50.2 49Q64.1 43 76 34.6 M49.8 50.6Q35.6 44.6 23.4 36.2 M50.2 63Q64.1 57 76 56.1 M49.8 64.6Q35.6 58.6 23.4 57.7 M50.2 77Q58.93 71 65.66 73.1 M49.8 78.6Q40.77 72.6 33.74 74.7" fill="none" stroke="#E9C3A6" stroke-width="1.15" stroke-linecap="round"/></g></g></symbol>
+    <!-- Versión más luminosa para el recuadro oscuro del header: misma hoja, tonos más claros para que resalte. -->
+    <symbol id="oak-mark-bright" viewBox="0 0 100 100"><g transform="rotate(-24 50 50) translate(4 2) scale(.9)"><path d="M50 88.5Q50.4 93 49.6 97.5" fill="none" stroke="#D08A62" stroke-width="2.4" stroke-linecap="round"/><use href="#oak-mark-blade" fill="url(#oak-mark-fill-bright)"/><g clip-path="url(#oak-mark-clip)"><g fill="#8A3F2C" opacity=".35"><circle cx="46.2" cy="23.0" r="1.02"/><circle cx="33.6" cy="51.1" r="0.79"/><circle cx="32.9" cy="49.0" r="0.53"/><circle cx="51.7" cy="17.1" r="0.57"/><circle cx="51.2" cy="72.4" r="0.60"/><circle cx="41.2" cy="57.8" r="1.26"/><circle cx="58.9" cy="41.0" r="1.28"/><circle cx="32.3" cy="74.7" r="0.73"/><circle cx="37.2" cy="20.6" r="0.75"/><circle cx="70.8" cy="25.2" r="0.97"/><circle cx="61.9" cy="39.2" r="0.94"/><circle cx="33.1" cy="16.4" r="0.66"/><circle cx="64.0" cy="43.2" r="0.75"/><circle cx="59.3" cy="45.1" r="0.74"/><circle cx="69.7" cy="63.0" r="0.70"/><circle cx="58.7" cy="50.3" r="1.20"/><circle cx="66.5" cy="33.0" r="1.28"/><circle cx="35.9" cy="42.5" r="1.11"/><circle cx="37.6" cy="47.7" r="0.53"/><circle cx="63.4" cy="67.8" r="0.96"/><circle cx="73.8" cy="34.9" r="1.06"/><circle cx="59.7" cy="54.3" r="0.86"/><circle cx="72.0" cy="81.0" r="0.88"/><circle cx="63.2" cy="16.4" r="1.06"/><circle cx="62.4" cy="84.5" r="1.16"/><circle cx="44.2" cy="40.2" r="1.03"/></g><use href="#oak-mark-half" fill="#1E1612" opacity=".16"/><path d="M50 94.5Q50.6 60 50 8 M50.2 33Q59.4 27 66.6 14.6 M49.8 34.6Q40.3 28.6 32.8 16.2 M50.2 49Q64.1 43 76 34.6 M49.8 50.6Q35.6 44.6 23.4 36.2 M50.2 63Q64.1 57 76 56.1 M49.8 64.6Q35.6 58.6 23.4 57.7 M50.2 77Q58.93 71 65.66 73.1 M49.8 78.6Q40.77 72.6 33.74 74.7" fill="none" stroke="#FFE3C8" stroke-width="1.3" stroke-linecap="round"/></g></g></symbol>
+  </defs></svg>
 <header>
-  <h1>Order Book Demo</h1>
+  <h1>Order Book <em>(Demo)</em></h1>
   <p>Every order below is matched live by the C++17 engine (price-time priority).</p>
 </header>
 
@@ -108,7 +163,11 @@
   </section>
 
   <section class="panel">
-    <h2>Trades</h2>
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="trades" role="tab">Trades</button>
+      <button class="tab" data-tab="holdings" role="tab">Holdings</button>
+    </div>
+    <div id="view-trades">
     <div class="stats">
       <div class="stat"><small>Last price</small><b id="last">-</b></div>
       <div class="stat"><small>Trades</small><b id="count">0</b></div>
@@ -116,8 +175,37 @@
       <div class="stat"><small>Resting orders</small><b id="resting">0</b></div>
     </div>
     <ul class="tape" id="tape"></ul>
+    </div>
+    <div id="view-holdings" hidden>
+      <div class="position">
+        <small>Your position</small>
+        <b id="h-net">0 shares</b>
+        <span id="h-side">Flat: send an order to start</span>
+      </div>
+      <div class="stats">
+        <div class="stat"><small>Bought</small><b id="h-bought">0</b><small id="h-avgbuy">avg -</small></div>
+        <div class="stat"><small>Sold</small><b id="h-sold">0</b><small id="h-avgsell">avg -</small></div>
+        <div class="stat"><small>Cash flow</small><b id="h-cash">$0.00</b></div>
+        <div class="stat"><small>P&amp;L at last price</small><b id="h-pnl">$0.00</b></div>
+      </div>
+      <h3 class="subhead">Your open orders</h3>
+      <ul class="tape" id="h-open"></ul>
+      <p class="help">Only orders you send with <b>Send order</b> count here. Your resting orders are outlined in honey in the book.</p>
+    </div>
   </section>
 </main>
+
+<footer class="site-footer">
+  <a class="oak-chip" href="https://builtbyoak.com" target="_blank" rel="noopener" aria-label="Built by Oak (opens in a new tab)">
+    <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#oak-mark-flat"/></svg>
+    <span>Built by Oak</span>
+  </a>
+  <p>Designed and built by <b>Mateo Scarponi</b> · C++17 engine, live in your browser</p>
+  <ul class="social">
+    <li><a href="https://github.com/mateoscarponi" target="_blank" rel="noopener" aria-label="Mateo Scarponi on GitHub (opens in a new tab)"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M23 9v6h-1v2h-1v2h-1v1h-1v1h-1v1h-2v1h-1v-5h-1v-1h1v-1h2v-1h1v-1h1V9h-1V6h-2v1h-1v1h-1V7h-4v1H9V7H8V6H6v3H5v5h1v1h1v1h2v2H7v-1H6v-1H4v1h1v2h1v1h3v3H8v-1H6v-1H5v-1H4v-1H3v-2H2v-2H1V9h1V7h1V5h1V4h1V3h2V2h2V1h6v1h2v1h2v1h1v1h1v2h1v2z"/></svg></a></li>
+    <li><a href="https://www.linkedin.com/in/mateogscarponi/" target="_blank" rel="noopener" aria-label="Mateo Scarponi on LinkedIn (opens in a new tab)"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M22 2V1H2v1H1v20h1v1h20v-1h1V2zm-9 10v8h-3V9h3v1h1V9h4v1h1v10h-3v-8zM4 8V5h3v3zm3 1v11H4V9z"/></svg></a></li>
+  </ul>
+</footer>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -125,8 +213,12 @@
   let side = "BUY";
   let book = { bids: [], asks: [] };
   let tradeCount = 0, volume = 0, autoTimer = null, buyShare = 0.5;
+  // The user's own orders and fills, for the Holdings tab.
+  const mine = new Set();
+  let held = { bought: 0, sold: 0, spent: 0, received: 0, lastPrice: null };
+  const dollars = (cents) => (cents < 0 ? "-$" : "$") + (Math.abs(cents) / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  async function send(command) {
+  async function send(command, isMine = false) {
     const response = await fetch("/api/command", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -134,6 +226,7 @@
     });
     if (!response.ok) throw new Error(await response.text());
     const data = await response.json();
+    if (isMine && data.ok && data.action === "NEW") mine.add(data.id);
     book = data;
     render(data);
     return data;
@@ -144,7 +237,7 @@
     const maxQty = Math.max(1, ...data.bids.map((l) => l.qty), ...data.asks.map((l) => l.qty));
     const levelRow = (level, cls) => {
       const chips = level.orders.map(([id, qty], i) =>
-        `<span class="chip${i === 0 ? " first" : ""}" data-id="${id}" title="Cancel #${id}">#${id} × ${qty}</span>`).join("");
+        `<span class="chip${i === 0 ? " first" : ""}${mine.has(id) ? " mine" : ""}" data-id="${id}" title="Cancel #${id}">#${id} × ${qty}</span>`).join("");
       return `<tr class="level ${cls}"><td>${money(level.price)}</td>
         <td class="qty"><div class="bar" style="width:${(100 * level.qty / maxQty).toFixed(1)}%"></div><span>${level.qty}</span></td>
         <td><div class="chips">${chips}</div></td></tr>`;
@@ -161,6 +254,9 @@
     $("resting").textContent = data.orders;
 
     for (const t of data.trades) {
+      held.lastPrice = t.price;
+      if (mine.has(t.buy)) { held.bought += t.qty; held.spent += t.qty * t.price; }
+      if (mine.has(t.sell)) { held.sold += t.qty; held.received += t.qty * t.price; }
       tradeCount += 1;
       volume += t.qty;
       $("last").textContent = money(t.price);
@@ -171,8 +267,38 @@
       $("tape").prepend(li);
     }
     while ($("tape").children.length > 200) $("tape").lastChild.remove();
+    renderHoldings(data);
     $("count").textContent = tradeCount;
     $("volume").textContent = volume;
+  }
+
+  function renderHoldings(data) {
+    const net = held.bought - held.sold;
+    const cash = held.received - held.spent;
+    const pnl = held.lastPrice === null ? 0 : cash + net * held.lastPrice;
+    $("h-net").textContent = `${net > 0 ? "+" : ""}${net} shares`;
+    $("h-net").className = net > 0 ? "pos" : net < 0 ? "neg" : "";
+    $("h-side").textContent = net > 0 ? "Long: you own these shares" : net < 0 ? "Short: you sold more than you bought"
+      : held.bought ? "Flat: bought and sold the same amount" : "Flat: send an order to start";
+    $("h-bought").textContent = held.bought;
+    $("h-sold").textContent = held.sold;
+    $("h-avgbuy").textContent = held.bought ? `avg ${money(held.spent / held.bought)}` : "avg -";
+    $("h-avgsell").textContent = held.sold ? `avg ${money(held.received / held.sold)}` : "avg -";
+    $("h-cash").textContent = dollars(cash);
+    $("h-pnl").textContent = dollars(Math.round(pnl));
+    $("h-pnl").className = pnl > 0 ? "pos" : pnl < 0 ? "neg" : "";
+    const open = [];
+    for (const [levels, label] of [[data.bids, "BUY"], [data.asks, "SELL"]]) {
+      for (const level of levels) for (const [id, qty] of level.orders) {
+        if (mine.has(id)) open.push(`<li><span class="${label === "BUY" ? "buy" : "sell"}">${label}</span><span>${qty} @ ${money(level.price)}</span><small>#${id}</small></li>`);
+      }
+    }
+    $("h-open").innerHTML = open.length ? open.join("") : `<li><small>No open orders</small></li>`;
+  }
+
+  function resetHoldings() {
+    mine.clear();
+    held = { bought: 0, sold: 0, spent: 0, received: 0, lastPrice: null };
   }
 
   function describe(data, label) {
@@ -189,10 +315,10 @@
     }
   }
 
-  async function sendOrder(s, type, priceDollars, qty) {
+  async function sendOrder(s, type, priceDollars, qty, isMine = false) {
     const cents = type === "MARKET" ? 0 : Math.round(priceDollars * 100);
     const label = `${s} ${qty} ${type}${type === "MARKET" ? "" : " @ " + money(cents)}`;
-    try { describe(await send(`NEW ${s} ${type} ${cents} ${qty}`), label); }
+    try { describe(await send(`NEW ${s} ${type} ${cents} ${qty}`, isMine), label); }
     catch (e) { $("msg").className = "msg err"; $("msg").textContent = e.message; }
   }
 
@@ -215,7 +341,7 @@
 
   async function seed() {
     await send("RESET");
-    tradeCount = 0; volume = 0; $("tape").innerHTML = ""; $("last").textContent = "-";
+    tradeCount = 0; volume = 0; resetHoldings(); renderHoldings(book); $("tape").innerHTML = ""; $("last").textContent = "-";
     const orders = [
       ["SELL", 15025, 120], ["SELL", 15020, 80], ["SELL", 15015, 150], ["SELL", 15010, 60],
       ["SELL", 15010, 90], ["SELL", 15005, 50], ["SELL", 15005, 75],
@@ -236,7 +362,7 @@
     const qty = parseInt($("qty").value, 10);
     const price = parseFloat($("price").value);
     if (!(qty > 0)) { $("msg").className = "msg err"; $("msg").textContent = "Quantity must be positive."; return; }
-    sendOrder(side, $("type").value, price, qty);
+    sendOrder(side, $("type").value, price, qty, true);
   });
   $("book").addEventListener("click", (e) => {
     const chip = e.target.closest(".chip");
@@ -247,11 +373,16 @@
     buyShare = buyers / 100;
     $("pressureLabel").textContent = `${buyers}% buyers / ${100 - buyers}% sellers`;
   });
+  document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t === tab));
+    $("view-trades").hidden = tab.dataset.tab !== "trades";
+    $("view-holdings").hidden = tab.dataset.tab !== "holdings";
+  }));
   $("seed").addEventListener("click", seed);
   $("random").addEventListener("click", randomOrder);
   $("reset").addEventListener("click", async () => {
     await send("RESET");
-    tradeCount = 0; volume = 0; $("tape").innerHTML = ""; $("last").textContent = "-";
+    tradeCount = 0; volume = 0; resetHoldings(); renderHoldings(book); $("tape").innerHTML = ""; $("last").textContent = "-";
     $("count").textContent = 0; $("volume").textContent = 0;
     $("msg").className = "msg"; $("msg").textContent = "Book cleared.";
   });

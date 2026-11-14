@@ -2,6 +2,10 @@
 
 A limit order book and multithreaded matching engine in modern C++17.
 
+![Live demo: loading the sample book, a limit buy filling in price-time order, waves of market buys and sells moving the price, the Holdings tab, and auto-flow tilted toward buyers](docs/demo.gif)
+
+*The live demo: every order is matched by the C++ engine. Market buys push the price up, market sells push it down.*
+
 It is the core piece of any trading venue or execution system: orders come in, the book matches buyers with sellers by **price-time priority**, and every match becomes a trade. On top of the single-instrument book, a matching engine runs many instruments in parallel across worker threads.
 
 No external dependencies. It builds with CMake on Linux, macOS and Windows (GCC or Clang), and CI runs every test on Linux under AddressSanitizer, UndefinedBehaviorSanitizer and ThreadSanitizer.
@@ -37,7 +41,7 @@ cmake -S . -B build && cmake --build build
 python demo/server.py          # then open http://localhost:8000
 ```
 
-`demo/server.py` (Python standard library only) starts `build/interactive`, a line-based front end to one `OrderBook`, and forwards each command from the page to it. Load the sample book, send an order that crosses the spread, click an order to cancel it, or turn on auto-flow to stream random orders, with a slider for the mix of buyers and sellers. The page shows the ladder with each price level's queue in time order, the spread, and a live trade tape.
+`demo/server.py` (Python standard library only) starts `build/interactive`, a line-based front end to one `OrderBook`, and forwards each command from the page to it. Load the sample book, send an order that crosses the spread, click an order to cancel it, or turn on auto-flow to stream random orders, with a slider for the mix of buyers and sellers. A Holdings tab tracks the shares you bought and sold with your own orders, your average prices and your profit or loss. The page shows the ladder with each price level's queue in time order, the spread, and a live trade tape.
 
 ### Example
 
@@ -166,6 +170,7 @@ apps/replay.cpp     CSV replay tool
 apps/bench.cpp      throughput benchmark
 apps/interactive.cpp line-based front end used by the web demo
 demo/               local web demo (server.py + index.html)
+docs/demo.gif       recording of the demo
 tests/tests.cpp     unit and concurrency tests
 examples/           sample order file
 ```
